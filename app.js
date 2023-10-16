@@ -22,11 +22,33 @@ app.get('/', (req, res) => {
 // Ruta para buscar películas
 app.get('/buscar', (req, res) => {
     const searchTerm = req.query.q;
+    const genres = req.query.g;
+
+    let sql = 'SELECT distinct m.movie_id, title FROM movie as m join movie_genres as mg on m.movie_id=mg.movie_id join genre as g on mg.genre_id=g.genre_id WHERE m.title LIKE ?';
+    const params = [];
+
+    // Check if genres are provided and add them to the query if they exist
+    if (genres) {
+        if (Array.isArray(genres)) {
+            // If genres is an array, add multiple genre filters
+            sql = 'with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genres.map(() => '?').join(',') + '))' + sql;
+            params.push(...genres);
+        } else {
+            // If genres is a single value, split it by '&' and add multiple genre filters
+            const genreArray = Array.isArray(genres) ? genres : [genres];
+            sql = 'with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genreArray.map(() => '?').join(',') + '))' + sql;
+            params.push(...genreArray);
+        }
+        sql += ' and not exists (select 1 from desiredGenres dg where not exists(select 1 from movie_genres as mg where m.movie_id=mg.movie_id and dg.genre_id=mg.genre_id))'
+    }
+    params.push(`%${searchTerm}%`);
+
+    console.log(sql)
 
     // Realizar la búsqueda en la base de datos
     db.all(
-        'SELECT * FROM movie WHERE title LIKE ?',
-        [`%${searchTerm}%`],
+        sql,
+        params,
         (err, rows) => {
             if (err) {
                 console.error(err);
