@@ -21,6 +21,7 @@ app.get('/', (req, res) => {
 
 // Ruta para buscar películas
 app.get('/buscar', (req, res) => {
+    const options = req.query.o;
     const searchTerm = req.query.q;
     const genres = req.query.g;
 
@@ -76,7 +77,15 @@ app.get('/buscar', (req, res) => {
                                         console.error(err);
                                         res.status(500).send('Error en la búsqueda.');
                                     } else {
-                                        res.render('resultado', { movies, actors, directors});
+                                        if (options === 'Movies') {
+                                            res.render('resultado', { movies });
+                                        } else if (options === 'Actors') {
+                                            res.render('resultado', { actors });
+                                        } else if  (options === 'Directors') {
+                                            res.render('resultado', { directors });
+                                        } else {
+                                            res.render('resultado', {movies, actors, directors});
+                                        }
                                     }
                                 }
                             );

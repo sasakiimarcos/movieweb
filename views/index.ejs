@@ -122,6 +122,12 @@
 <h1>MovieWeb</h1>
 <div class="form">
     <form action="/buscar" method="GET">
+        <select id="options" name="o">
+            <option value="All" selected>All</option>
+            <option value="Movies">Movies</option>
+            <option value="Actors">Actors</option>
+            <option value="Directors">Directors</option>
+        </select>
         <input id="search" type="text" name="q" placeholder="Buscar películas, actores o directores..." />
         <button type="submit">Buscar</button>
         <div>

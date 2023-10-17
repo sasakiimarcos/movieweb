@@ -9,7 +9,7 @@
 <div id="results">
     <div class="results-result">
         <h2>Movies</h2>
-        <% if (movies.length === 0) { %>
+        <% if (typeof movies === "undefined" || movies.length === 0) { %>
             <p>No hay resultados.</p>
         <% } else { %>
             <ul>
@@ -21,7 +21,7 @@
     </div>
     <div class="results-result">
         <h2>Actors</h2>
-        <% if (actors.length === 0) { %>
+        <% if (typeof actors === "undefined" || actors.length === 0) { %>
             <p>No hay resultados.</p>
         <% } else { %>
             <ul>
@@ -33,7 +33,7 @@
     </div>
     <div class="results-result">
         <h2>Directors</h2>
-        <% if (directors.length === 0) { %>
+        <% if (typeof directors === "undefined" || directors.length === 0) { %>
             <p>No hay resultados.</p>
         <% } else { %>
             <ul>
