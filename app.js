@@ -24,8 +24,9 @@ app.get('/buscar', (req, res) => {
     const searchTerm = req.query.q;
     const genres = req.query.g;
 
+    // *** MOVIES ***
     let sql = 'SELECT distinct m.movie_id, title FROM movie as m join movie_genres as mg on m.movie_id=mg.movie_id join genre as g on mg.genre_id=g.genre_id WHERE m.title LIKE ?';
-    const params = [];
+    let params = [];
 
     // Check if genres are provided and add them to the query if they exist
     if (genres) {
@@ -45,16 +46,43 @@ app.get('/buscar', (req, res) => {
 
     console.log(sql)
 
-    // Realizar la búsqueda en la base de datos
+    // Realizar la búsqueda en la base de datos de Movies
+
     db.all(
         sql,
         params,
-        (err, rows) => {
+        (err, movies) => {
             if (err) {
                 console.error(err);
                 res.status(500).send('Error en la búsqueda.');
             } else {
-                res.render('resultado', { movies: rows });
+                sql = 'select distinct p.person_id, person_name from movie_cast as mc join person as p on mc.person_id=p.person_id where person_name like ?'
+                params = [`%${searchTerm}%`];
+                db.all(
+                    sql,
+                    params,
+                    (err, actors) => {
+                        if (err) {
+                            console.error(err);
+                            res.status(500).send('Error en la búsqueda.');
+                        } else {
+                            sql = 'select distinct p.person_id, person_name from movie_crew as mc join person as p on mc.person_id=p.person_id where job=\'Director\' and person_name like ?'
+                            params = [`%${searchTerm}%`];
+                            db.all(
+                                sql,
+                                params,
+                                (err, directors) => {
+                                    if (err) {
+                                        console.error(err);
+                                        res.status(500).send('Error en la búsqueda.');
+                                    } else {
+                                        res.render('resultado', { movies, actors, directors});
+                                    }
+                                }
+                            );
+                        }
+                    }
+                );
             }
         }
     );

@@ -6,15 +6,44 @@
 </head>
 <body>
 <h1>Resultado de la Búsqueda</h1>
-<% if (movies.length === 0) { %>
-    <p>No hay resultados.</p>
-<% } else { %>
-    <ul>
-        <% movies.forEach((movie) => { %>
-            <li><a href="/pelicula/<%= movie.movie_id %>"><%= movie.title %></a></li>
-        <% }); %>
-    </ul>
-<% } %>
+<div id="results">
+    <div class="results-result">
+        <h2>Movies</h2>
+        <% if (movies.length === 0) { %>
+            <p>No hay resultados.</p>
+        <% } else { %>
+            <ul>
+                <% movies.forEach((movie) => { %>
+                    <li><a href="/pelicula/<%= movie.movie_id %>"><%= movie.title %></a></li>
+                <% }); %>
+            </ul>
+        <% } %>
+    </div>
+    <div class="results-result">
+        <h2>Actors</h2>
+        <% if (actors.length === 0) { %>
+            <p>No hay resultados.</p>
+        <% } else { %>
+            <ul>
+                <% actors.forEach((actor) => { %>
+                    <li><a href="/actor/<%= actor.person_id %>"><%= actor.person_name %></a></li>
+                <% }); %>
+            </ul>
+        <% } %>
+    </div>
+    <div class="results-result">
+        <h2>Directors</h2>
+        <% if (directors.length === 0) { %>
+            <p>No hay resultados.</p>
+        <% } else { %>
+            <ul>
+                <% directors.forEach((director) => { %>
+                    <li><a href="/director/<%= director.person_id %>"><%= director.person_name %></a></li>
+                <% }); %>
+            </ul>
+        <% } %>
+    </div>
+</div>
 <p></p>
 <div id="inicio"><a href="/">Inicio</a></div>
 </body>

@@ -68,3 +68,18 @@ a:hover {
     margin: 0 auto; /* Centrar horizontalmente el elemento */
     padding: 50px; /* Agregar un poco de espacio interior para que se vea mejor */
 }
+
+#results {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.results-result {
+    padding-left: 40px;
+    padding-right: 40px;
+    border-style: solid;
+    border-width: 2.5px;
+    border-radius: 10px;
+    margin: 20px;
+    flex: 1;
+}
