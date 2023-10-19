@@ -22,8 +22,9 @@
         form {
             text-align: center;
         }
+
         .form {
-            width: 800px;
+            width: 100%;
         }
 
        #search {
@@ -65,15 +66,25 @@
         }
 
         #advanced {
+            padding: 20px;
             display: none;
+            width: 100%;
+            justify-content: space-around;
+            align-content: space-around;
+            flex-wrap: wrap;
         }
 
         .advanced-items {
-            flex: 1;
             display: flex;
+            flex-wrap: wrap;
             flex-direction: column;
             height: 250px;
-            flex-wrap: wrap;
+            align-content: center;
+        }
+
+        .advanced-container {
+            flex: 1;
+            height: 250px;
         }
 
         .advanced-item-checkbox {
@@ -200,10 +211,100 @@
                     </div>
                 </div>
             </div>
-            <div class="advanced-items">
-                <div class="advanced-container">
+            <div class="advanced-container">
                 <div><h2>Keywords</h2></div>
+                <div class="advanced-items">
                     <textarea id="keyword-box" name="k" placeholder="Keywords: woman director, independent film, etc."></textarea>
+                </div>
+            </div>
+            <div class="advanced-container">
+                <div><h2>Language</h2></div>
+                <div class="advanced-items">
+                    <select id="languages" name="l">
+                        <option value="English" selected>English</option>
+                        <option value="Svenska">Svenska</option>
+                        <option value="Deutsch">Deutsch</option>
+                        <option value="No language">No language</option>
+                        <option value="日本語">日本語</option>
+                        <option value="Français">Français</option>
+                        <option value="Español">Español</option>
+                        <option value="العربية">العربية</option>
+                        <option value="Latin">Latin</option>
+                        <option value="ភាសាខ្មែរ">ភាសាខ្មែរ</option>
+                        <option value="Tiếng Việt">Tiếng Việt</option>
+                        <option value="Türkçe">Türkçe</option>
+                        <option value="ελληνικά">ελληνικά</option>
+                        <option value="普通话">普通话</option>
+                        <option value="Pусский">Pусский</option>
+                        <option value="Gaeilge">Gaeilge</option>
+                        <option value="广州话 / 廣州話">广州话 / 廣州話</option>
+                        <option value="Magyar">Magyar</option>
+                        <option value="עִבְרִית">עִבְרִית</option>
+                        <option value="नेपाली">नेपाली</option>
+                        <option value="සිංහල">සිංහල</option>
+                        <option value="Italiano">Italiano</option>
+                        <option value="Nederlands">Nederlands</option>
+                        <option value="Suomi">Suomi</option>
+                        <option value="Português">Português</option>
+                        <option value="Gàidhlig">Gàidhlig</option>
+                        <option value="فارسی">فارسی</option>
+                        <option value="اردو">اردو</option>
+                        <option value="Dansk">Dansk</option>
+                        <option value="ภาษาไทย">ภาษาไทย</option>
+                        <option value="Norsk">Norsk</option>
+                        <option value="Shqip">Shqip</option>
+                        <option value="Polski">Polski</option>
+                        <option value="Íslenska">Íslenska</option>
+                        <option value="Tagalog">Tagalog</option>
+                        <option value="ਪੰਜਾਬੀ">ਪੰਜਾਬੀ</option>
+                        <option value="हिन्दी">हिन्दी</option>
+                        <option value="қазақ">қазақ</option>
+                        <option value="български">български</option>
+                        <option value="Kiswahili">Kiswahili</option>
+                        <option value="Română">Română</option>
+                        <option value="한국어조선말">한국어조선말</option>
+                        <option value="Český">Český</option>
+                        <option value="Slovenčina">Slovenčina</option>
+                        <option value="Māori">Māori</option>
+                        <option value="Esperanto">Esperanto</option>
+                        <option value="Somali">Somali</option>
+                        <option value="Afrikaans">Afrikaans</option>
+                        <option value="isiXhosa">isiXhosa</option>
+                        <option value="isiZulu">isiZulu</option>
+                        <option value="ייִדיש">ייִדיש</option>
+                        <option value="Català">Català</option>
+                        <option value="српски">српски</option>
+                        <option value="संस्कृतम्">संस्कृतम्</option>
+                        <option value="Український">Український</option>
+                        <option value="Hrvatski">Hrvatski</option>
+                        <option value="Galego">Galego</option>
+                        <option value="Српскохрватски">Српскохрватски</option>
+                        <option value="Corsu">Corsu</option>
+                        <option value="Kernewek">Kernewek</option>
+                        <option value="བོད་ཡིག">བོད་ཡིག</option>
+                        <option value="Bosanski">Bosanski</option>
+                        <option value="پښتو">پښتو</option>
+                        <option value="ᐃᓄᒃᑎᑐᑦ">ᐃᓄᒃᑎᑐᑦ</option>
+                        <option value="Հայերեն լեզու">Հայերեն լեզու</option>
+                        <option value="አማርኛ">አማርኛ</option>
+                        <option value="нохчийн мотт">нохчийн мотт</option>
+                        <option value="Eesti">Eesti</option>
+                        <option value="كوردی">كوردی</option>
+                        <option value="Diné bizaad">Diné bizaad</option>
+                        <option value="монгол хэл">монгол хэл</option>
+                        <option value="Faka-Tonga">Faka-Tonga</option>
+                        <option value="বাংলা">বাংলা</option>
+                        <option value="chiCheŵa">chiCheŵa</option>
+                        <option value="seSotho">seSotho</option>
+                        <option value="རྫོང་ཁ">རྫོང་ཁ</option>
+                        <option value="Cymraeg">Cymraeg</option>
+                        <option value="Wolof">Wolof</option>
+                        <option value="ქართული">ქართული</option>
+                        <option value="Brezhoneg">Brezhoneg</option>
+                        <option value="தமிழ்">தமிழ்</option>
+                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                        <option value="മലയാളം">മലയാളം</option>
+                    </select>
                 </div>
             </div>
         </div>

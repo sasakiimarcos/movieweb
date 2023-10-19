@@ -103,7 +103,7 @@ app.get('/pelicula/:id', (req, res) => {
 
     // Consulta SQL para obtener los datos de la película, elenco y crew
     const query = `
-    SELECT
+   SELECT
       movie.*,
       actor.person_name as actor_name,
       actor.person_id as actor_id,
@@ -112,13 +112,17 @@ app.get('/pelicula/:id', (req, res) => {
       movie_cast.character_name,
       movie_cast.cast_order,
       department.department_name,
-      movie_crew.job
+      movie_crew.job,
+      g.genre_name,
+      g.genre_id
     FROM movie
     LEFT JOIN movie_cast ON movie.movie_id = movie_cast.movie_id
     LEFT JOIN person as actor ON movie_cast.person_id = actor.person_id
     LEFT JOIN movie_crew ON movie.movie_id = movie_crew.movie_id
     LEFT JOIN department ON movie_crew.department_id = department.department_id
     LEFT JOIN person as crew_member ON crew_member.person_id = movie_crew.person_id
+    left join movie_genres as mg on movie.movie_id=mg.movie_id
+    left join genre as g on mg.genre_id=g.genre_id
     WHERE movie.movie_id = ?
   `;
 
@@ -140,6 +144,8 @@ app.get('/pelicula/:id', (req, res) => {
                 writers: [],
                 cast: [],
                 crew: [],
+                genres: [],
+                keywords: []
             };
 
             // Crear un objeto para almacenar directores
@@ -163,6 +169,47 @@ app.get('/pelicula/:id', (req, res) => {
                     }
                 }
             });
+
+            // Crear un objeto para almacenar escritores
+            rows.forEach((row) => {
+                if (row.crew_member_id && row.crew_member_name && row.department_name && row.job) {
+                    // Verificar si ya existe una entrada con los mismos valores en directors
+                    const isDuplicate = movieData.writers.some((crew_member) =>
+                        crew_member.crew_member_id === row.crew_member_id
+                    );
+
+                    if (!isDuplicate) {
+                        // Si no existe, agregar los datos a la lista de escritores
+                        if (row.department_name === 'Writing' && row.job === 'Writer') {
+                            movieData.writers.push({
+                                crew_member_id: row.crew_member_id,
+                                crew_member_name: row.crew_member_name,
+                                department_name: row.department_name,
+                                job: row.job,
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Crear un objeto para almacenar generos
+            rows.forEach((row) => {
+                if (row.genre_name && row.genre_id) {
+                    // Verificar si ya existe una entrada con los mismos valores en directors
+                    const isDuplicate = movieData.genres.some((movieGenre) =>
+                        movieGenre.genre_id === row.genre_id
+                    );
+
+                    if (!isDuplicate) {
+                        // Si no existe, agregar los datos a la lista de directors
+                            movieData.genres.push({
+                                genre_name: row.genre_name,
+                                genre_id: row.genre_id
+                            });
+                    }
+                }
+            });
+
 
             // Crear un objeto para almacenar writers
             rows.forEach((row) => {

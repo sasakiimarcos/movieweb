@@ -6,6 +6,18 @@
 </head>
 <body>
 <h1><%= movie.title %></h1>
+<h3>Genres</h3>
+<p>
+    <% let count = movie.genres.length %>
+    <% movie.genres.forEach((genre) => { %>
+        <% count-- %>
+        <% if (count === 0) {%>
+        <%= genre.genre_name %>
+        <% } else {%>
+        <%= genre.genre_name + ", " %>
+        <% } %>
+    <% }); %>
+</p>
 <h3>Fecha: <%= movie.release_date %></h3>
 <h3>Dirigida por: </h3>
 <ul>
