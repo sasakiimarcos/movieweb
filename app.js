@@ -25,6 +25,8 @@ app.get('/buscar', (req, res) => {
     const searchTerm = req.query.q;
     const genres = req.query.g;
     const language = req.query.l;
+    const keyWords = req.query.k;
+    const keyWordsArray = keyWords.split(", ");
 
     // *** MOVIES ***
     let sql = `SELECT distinct m.movie_id, title 
@@ -33,6 +35,8 @@ app.get('/buscar', (req, res) => {
                       join genre as g on mg.genre_id=g.genre_id
                       join movie_languages as ml on m.movie_id=ml.movie_id and ml.language_role_id=1
                       join language as l on ml.language_id=l.language_id
+                      join movie_keywords as mk on m.movie_id=mk.movie_id
+                      join keyword as k on mk.keyword_id=k.keyword_id
                       WHERE m.title LIKE ? and l.language_name like ?`;
     let params = [];
 
@@ -50,6 +54,13 @@ app.get('/buscar', (req, res) => {
         }
         sql += ' and not exists (select 1 from desiredGenres dg where not exists(select 1 from movie_genres as mg where m.movie_id=mg.movie_id and dg.genre_id=mg.genre_id))'
     }
+
+    if (keyWordsArray.length !== 0) {
+        sql = 'with desiredKeys as (select keyword_name, keyword_id from keyword where keyword_name in (' + keyWordsArray.map(() => '?').join(',') + '))' + sql;
+        params.push(...keyWordsArray);
+        sql += ' and not exists (select 1 from desiredKeys dk where not exists(select 1 from movie_keywords as mk where m.movie_id=mk.movie_id and dk.keyword_id=mk.keyword_id))'
+    }
+
     params.push(`%${searchTerm}%`);
 
     if (language === "All" ){
