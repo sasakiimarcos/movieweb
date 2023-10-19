@@ -6,12 +6,20 @@
 </head>
 <body>
 <h1>Películas con <%= actorName %></h1>
+<div><h2>Starred in</h2></div>
 <ul>
     <% movies.sort((a, b) => new Date(b.release_date) - new Date(a.release_date)).forEach((movie) => { %>
+        <% if (movie.role === 1) {%>
         <li><a href="/pelicula/<%= movie.movie_id %>"><%= movie.title %> (<%= new Date(movie.release_date).getFullYear() %>)</a></li>
-    <% }); %>
+    <% }}); %>
 </ul>
-<p></p>
+<div><h2>Directed</h2></div>
+<ul>
+    <% movies.sort((a, b) => new Date(b.release_date) - new Date(a.release_date)).forEach((movie) => { %>
+        <% if (movie.role === 0) {%>
+        <li><a href="/pelicula/<%= movie.movie_id %>"><%= movie.title %> (<%= new Date(movie.release_date).getFullYear() %>)</a></li>
+    <% }}); %>
+</ul>
 <div id="inicio"><a href="/">Inicio</a></div>
 </body>
 </html>
