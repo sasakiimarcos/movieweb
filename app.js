@@ -24,9 +24,16 @@ app.get('/buscar', (req, res) => {
     const options = req.query.o;
     const searchTerm = req.query.q;
     const genres = req.query.g;
+    const language = req.query.l;
 
     // *** MOVIES ***
-    let sql = 'SELECT distinct m.movie_id, title FROM movie as m join movie_genres as mg on m.movie_id=mg.movie_id join genre as g on mg.genre_id=g.genre_id WHERE m.title LIKE ?';
+    let sql = `SELECT distinct m.movie_id, title 
+                      FROM movie as m
+                      join movie_genres as mg on m.movie_id=mg.movie_id
+                      join genre as g on mg.genre_id=g.genre_id
+                      join movie_languages as ml on m.movie_id=ml.movie_id and ml.language_role_id=1
+                      join language as l on ml.language_id=l.language_id
+                      WHERE m.title LIKE ? and l.language_name like ?`;
     let params = [];
 
     // Check if genres are provided and add them to the query if they exist
@@ -45,8 +52,13 @@ app.get('/buscar', (req, res) => {
     }
     params.push(`%${searchTerm}%`);
 
-    console.log(sql)
+    if (language === "All" ){
+        params.push(`%`)
+    } else {
+        params.push(`${language}`)
+    }
 
+    console.log(sql)
     // Realizar la búsqueda en la base de datos de Movies
 
     db.all(
