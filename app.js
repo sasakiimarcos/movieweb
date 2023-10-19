@@ -44,18 +44,21 @@ app.get('/buscar', (req, res) => {
     if (genres) {
         if (Array.isArray(genres)) {
             // If genres is an array, add multiple genre filters
-            sql = 'with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genres.map(() => '?').join(',') + '))' + sql;
+            sql = ' with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genres.map(() => '?').join(',') + '))' + sql;
             params.push(...genres);
         } else {
             // If genres is a single value, split it by '&' and add multiple genre filters
             const genreArray = Array.isArray(genres) ? genres : [genres];
-            sql = 'with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genreArray.map(() => '?').join(',') + '))' + sql;
             params.push(...genreArray);
         }
+        if (keyWordsArray.length !== 0) {
+            sql = ', desiredKeys as (select keyword_name, keyword_id from keyword where keyword_name in (' + keyWordsArray.map(() => '?').join(',') + '))' + sql;
+            params.push(...keyWordsArray);
+            sql += ' and not exists (select 1 from desiredKeys dk where not exists(select 1 from movie_keywords as mk where m.movie_id=mk.movie_id and dk.keyword_id=mk.keyword_id))'
+        }
+        sql = ' with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genreArray.map(() => '?').join(',') + '))' + sql;
         sql += ' and not exists (select 1 from desiredGenres dg where not exists(select 1 from movie_genres as mg where m.movie_id=mg.movie_id and dg.genre_id=mg.genre_id))'
-    }
-
-    if (keyWordsArray.length !== 0) {
+    } else if (keyWordsArray.length !== 0) {
         sql = 'with desiredKeys as (select keyword_name, keyword_id from keyword where keyword_name in (' + keyWordsArray.map(() => '?').join(',') + '))' + sql;
         params.push(...keyWordsArray);
         sql += ' and not exists (select 1 from desiredKeys dk where not exists(select 1 from movie_keywords as mk where m.movie_id=mk.movie_id and dk.keyword_id=mk.keyword_id))'
