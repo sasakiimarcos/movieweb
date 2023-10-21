@@ -6,19 +6,29 @@
 </head>
 <body>
 <h1>Películas con <%= actorName %></h1>
-<div><h2>Starred in</h2></div>
+<div><h2>Featured In</h2></div>
 <ul>
+    <% let exist = false %>
     <% movies.sort((a, b) => new Date(b.release_date) - new Date(a.release_date)).forEach((movie) => { %>
         <% if (movie.role === 1) {%>
         <li><a href="/pelicula/<%= movie.movie_id %>"><%= movie.title %> (<%= new Date(movie.release_date).getFullYear() %>)</a></li>
+        <% exist = true;%>
     <% }}); %>
+    <% if (!exist) { %>
+        <%= "No movies found" %>
+    <% } %>
 </ul>
 <div><h2>Directed</h2></div>
 <ul>
+    <% exist = false %>
     <% movies.sort((a, b) => new Date(b.release_date) - new Date(a.release_date)).forEach((movie) => { %>
         <% if (movie.role === 0) {%>
         <li><a href="/pelicula/<%= movie.movie_id %>"><%= movie.title %> (<%= new Date(movie.release_date).getFullYear() %>)</a></li>
+        <% exist = true %>
     <% }}); %>
+    <% if (!exist) { %>
+        <%= "No movies found" %>
+    <% } %>
 </ul>
 <div id="inicio"><a href="/">Inicio</a></div>
 </body>

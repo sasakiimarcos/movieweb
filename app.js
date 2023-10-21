@@ -37,7 +37,7 @@ app.get('/buscar', (req, res) => {
                       join language as l on ml.language_id=l.language_id
                       join movie_keywords as mk on m.movie_id=mk.movie_id
                       join keyword as k on mk.keyword_id=k.keyword_id
-                      WHERE m.title LIKE ? and l.language_name like ?`;
+                      WHERE m.title LIKE ? and l.language_code like ?`;
     let params = [];
 
     // Check if genres are provided and add them to the query if they exist
@@ -140,7 +140,9 @@ app.get('/pelicula/:id', (req, res) => {
       department.department_name,
       movie_crew.job,
       g.genre_name,
-      g.genre_id
+      g.genre_id,
+      k.keyword_name,
+      k.keyword_id
     FROM movie
     LEFT JOIN movie_cast ON movie.movie_id = movie_cast.movie_id
     LEFT JOIN person as actor ON movie_cast.person_id = actor.person_id
@@ -149,6 +151,8 @@ app.get('/pelicula/:id', (req, res) => {
     LEFT JOIN person as crew_member ON crew_member.person_id = movie_crew.person_id
     left join movie_genres as mg on movie.movie_id=mg.movie_id
     left join genre as g on mg.genre_id=g.genre_id
+    left join movie_keywords as mk on movie.movie_id=mk.movie_id
+    left join keyword as k on mk.keyword_id=k.keyword_id
     WHERE movie.movie_id = ?
   `;
 
@@ -232,6 +236,24 @@ app.get('/pelicula/:id', (req, res) => {
                                 genre_name: row.genre_name,
                                 genre_id: row.genre_id
                             });
+                    }
+                }
+            });
+
+            // Crear un objeto para almacenar keywords
+            rows.forEach((row) => {
+                if (row.keyword_name && row.keyword_id) {
+                    // Verificar si ya existe una entrada con los mismos valores en directors
+                    const isDuplicate = movieData.keywords.some((movieKeyword) =>
+                        movieKeyword.keyword_id === row.keyword_id
+                    );
+
+                    if (!isDuplicate) {
+                        // Si no existe, agregar los datos a la lista de directors
+                        movieData.keywords.push({
+                            keyword_name: row.keyword_name,
+                            keyword_id: row.keyword_id
+                        });
                     }
                 }
             });
