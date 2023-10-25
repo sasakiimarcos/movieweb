@@ -27,6 +27,7 @@ app.get('/buscar', (req, res) => {
     const language = req.query.l;
     const keyWords = req.query.k;
     const keyWordsArray = keyWords.split(", ");
+    let genreArray = []
 
     // *** MOVIES ***
     let sql = `SELECT distinct m.movie_id, title 
@@ -48,7 +49,7 @@ app.get('/buscar', (req, res) => {
             params.push(...genres);
         } else {
             // If genres is a single value, split it by '&' and add multiple genre filters
-            const genreArray = Array.isArray(genres) ? genres : [genres];
+            genreArray = Array.isArray(genres) ? genres : [genres];
             params.push(...genreArray);
         }
         if (keyWordsArray.length !== 0) {
@@ -142,7 +143,16 @@ app.get('/pelicula/:id', (req, res) => {
       g.genre_name,
       g.genre_id,
       k.keyword_name,
-      k.keyword_id
+      k.keyword_id,
+      movie.budget,
+      movie.revenue,
+      movie.runtime,
+      movie.vote_average,
+      movie.vote_count,
+      movie.popularity,
+      movie.movie_status,
+      movie.homepage,
+      movie.tagline
     FROM movie
     LEFT JOIN movie_cast ON movie.movie_id = movie_cast.movie_id
     LEFT JOIN person as actor ON movie_cast.person_id = actor.person_id
@@ -153,8 +163,7 @@ app.get('/pelicula/:id', (req, res) => {
     left join genre as g on mg.genre_id=g.genre_id
     left join movie_keywords as mk on movie.movie_id=mk.movie_id
     left join keyword as k on mk.keyword_id=k.keyword_id
-    WHERE movie.movie_id = ?
-  `;
+    WHERE movie.movie_id = ?`;
 
     // Ejecutar la consulta
     db.all(query, [movieId], (err, rows) => {
@@ -175,7 +184,16 @@ app.get('/pelicula/:id', (req, res) => {
                 cast: [],
                 crew: [],
                 genres: [],
-                keywords: []
+                keywords: [],
+                budget: rows[0].budget,
+                revenue: rows[0].revenue,
+                runtime: rows[0].runtime,
+                movie_status: rows[0].movie_status,
+                vote_average: rows[0].vote_average,
+                vote_count: rows[0].vote_count,
+                popularity: rows[0].popularity,
+                homepage: rows[0].homepage,
+                tagline: rows[0].tagline
             };
 
             // Crear un objeto para almacenar directores
@@ -337,22 +355,17 @@ app.get('/actor/:id', (req, res) => {
 
     // Consulta SQL para obtener las películas en las que participó el actor
     const query = `
-    SELECT DISTINCT
-    person.person_name as name,
-    movie.*, 0 as role
+    SELECT DISTINCT person.person_name as name, movie.*, 0 as role
     FROM movie
     JOIN movie_crew ON movie.movie_id = movie_crew.movie_id
     JOIN person ON person.person_id = movie_crew.person_id
     WHERE movie_crew.job = 'Director' AND movie_crew.person_id = ?
-    union
-    select
-    person.person_name as name,
-    movie.*, 1 as role
+    UNION
+    SELECT person.person_name as name, movie.*, 1 as role
     FROM movie
     JOIN movie_cast ON movie.movie_id = movie_cast.movie_id
     JOIN person ON person.person_id = movie_cast.person_id
-    WHERE movie_cast.person_id = ?;
-  `;
+    WHERE movie_cast.person_id = ?`;
 
     // Ejecutar la consulta
     db.all(query, [actorId, actorId], (err, movies) => {

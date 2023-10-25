@@ -70,6 +70,35 @@
         </li>
     <% }); %>
 </ul>
+<h3>Budget:</h3>
+<div id="budget"><p> $ <%= movie.budget %></p></div> 
+
+<h3>Revenue:</h3>
+<div id="revenue"><p> $ <%= movie.revenue %></p></div> 
+
+<h3>Runtime:</h3>
+<div id="runtime"><p><%= movie.runtime %> minutes</p></div> 
+
+<h3>Vote average:</h3>
+<div id="vote_average"><p><%= movie.vote_average %></p></div> 
+
+<h3>Vote count:</h3>
+<div id="vote_count"><p><%= movie.vote_count %></p></div> 
+
+<h3>Popularity:</h3>
+<div id="popularity"><p><%= movie.popularity %></p></div> 
+
+
+<h3>Movie Status:</h3>
+<div id="movie_status"><p><%= movie.movie_status %></p></div>
+
+<h3>Tagline:</h3>
+<div id="tagline"><p><%= movie.tagline %></p></div>
+
+<h3>Homepage:</h3>
+<div id="homepage"><a href=<%= movie.homepage %>><%= movie.homepage %></a></div>
+
+
 <p></p>
 <div id="inicio"><a href="/">Home</a></div>
 </body>
