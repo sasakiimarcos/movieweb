@@ -21,13 +21,22 @@ app.get('/', (req, res) => {
 
 // Ruta para buscar películas
 app.get('/buscar', (req, res) => {
+    // options contiene las opciones de busqueda, Ej: All, Movies, Directors, Actors.
     const options = req.query.o;
     const searchTerm = req.query.q;
-    const genres = req.query.g;
+    let genres = req.query.g;
+    // turns genres into an array if it is not
+    genres = Array.isArray(genres) ? genres : [genres]
     const language = req.query.l;
-    const keyWords = req.query.k;
-    const keyWordsArray = keyWords.split(", ");
-    let genreArray = []
+    let keywords = req.query.k;
+    keywords = keywords.split(", ");
+    // genreType determines whether search by genres will be done with or or and
+    const genreType = req.query.gi;
+    // keywordType determines whether search by genres will be done with or or and
+    const keywordType = req.query.ki;
+
+    // para que el arreglo qeude vacio si no tiene nada
+    if (keywords[0] === "") keywords = [];
 
     // *** MOVIES ***
     let sql = `SELECT distinct m.movie_id, title 
@@ -41,36 +50,135 @@ app.get('/buscar', (req, res) => {
                       WHERE m.title LIKE ? and l.language_code like ?`;
     let params = [];
 
-    // Check if genres are provided and add them to the query if they exist
+    // Case where genres exists
     if (genres) {
-        if (Array.isArray(genres)) {
-            // If genres is an array, add multiple genre filters
-            sql = ' with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genres.map(() => '?').join(',') + '))' + sql;
-            params.push(...genres);
+        // genres selected exclusively
+        if (typeof genreType === "undefined") {
+            // Case where keywords are selected
+            if (keywords.length !== 0) {
+                // case where keywords selection is exclusive
+                if (typeof keywordType === "undefined") {
+
+                    params.push(`%${searchTerm}%`);
+                    if (language === "All" ){
+                        params.push(`%`)
+                    } else {
+                        params.push(`${language}`)
+                    }
+                    params.push(...genres);
+                    params.push(...keywords);
+
+                    sql = ' with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genres.map(() => '?').join(',') + '))'
+                        + ', desiredKeys as (select keyword_name, keyword_id from keyword where keyword_name in (' + keywords.map(() => '?').join(',') + '))' + sql;
+                    sql += ' and not exists (select 1 from desiredKeys dk where not exists(select 1 from movie_keywords as mk where m.movie_id=mk.movie_id and dk.keyword_id=mk.keyword_id))'
+                        + ' and not exists (select 1 from desiredGenres dg where not exists(select 1 from movie_genres as mg where m.movie_id=mg.movie_id and dg.genre_id=mg.genre_id))'
+                // Case where keyword selection is inclusive
+                } else {
+
+                    params.push(...genres);
+                    params.push(`%${searchTerm}%`);
+                    if (language === "All" ){
+                        params.push(`%`)
+                    } else {
+                        params.push(`${language}`)
+                    }
+                    params.push(...keywords);
+
+                    sql = ' with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genres.map(() => '?').join(',') + '))' + sql;
+                    sql += ' and not exists (select 1 from desiredGenres dg where not exists(select 1 from movie_genres as mg where m.movie_id=mg.movie_id and dg.genre_id=mg.genre_id))'
+                        + ' and keyword_name in (' + keywords.map(() => '?').join(',') + ')'
+                }
+            //     case where keywords are not selected
+            } else {
+
+                params.push(...genres);
+                params.push(`%${searchTerm}%`);
+                if (language === "All" ){
+                    params.push(`%`)
+                } else {
+                    params.push(`${language}`)
+                }
+
+                sql = ' with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genres.map(() => '?').join(',') + '))' + sql;
+                sql += ' and not exists (select 1 from desiredGenres dg where not exists(select 1 from movie_genres as mg where m.movie_id=mg.movie_id and dg.genre_id=mg.genre_id))'
+            }
+        //     genres selected inclusively
         } else {
-            // If genres is a single value, split it by '&' and add multiple genre filters
-            genreArray = Array.isArray(genres) ? genres : [genres];
-            params.push(...genreArray);
-        }
-        if (keyWordsArray.length !== 0) {
-            sql = ', desiredKeys as (select keyword_name, keyword_id from keyword where keyword_name in (' + keyWordsArray.map(() => '?').join(',') + '))' + sql;
-            params.push(...keyWordsArray);
-            sql += ' and not exists (select 1 from desiredKeys dk where not exists(select 1 from movie_keywords as mk where m.movie_id=mk.movie_id and dk.keyword_id=mk.keyword_id))'
-        }
-        sql = ' with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genreArray.map(() => '?').join(',') + '))' + sql;
-        sql += ' and not exists (select 1 from desiredGenres dg where not exists(select 1 from movie_genres as mg where m.movie_id=mg.movie_id and dg.genre_id=mg.genre_id))'
-    } else if (keyWordsArray.length !== 0) {
-        sql = 'with desiredKeys as (select keyword_name, keyword_id from keyword where keyword_name in (' + keyWordsArray.map(() => '?').join(',') + '))' + sql;
-        params.push(...keyWordsArray);
-        sql += ' and not exists (select 1 from desiredKeys dk where not exists(select 1 from movie_keywords as mk where m.movie_id=mk.movie_id and dk.keyword_id=mk.keyword_id))'
-    }
+            // Case where keywords are selected
+            if (keywords.length !== 0) {
+                // case where keywords selection is exclusive
+                if (typeof keywordType === "undefined") {
 
-    params.push(`%${searchTerm}%`);
+                    params.push(...keywords);
+                    params.push(`%${searchTerm}%`);
+                    if (language === "All" ){
+                        params.push(`%`)
+                    } else {
+                        params.push(`${language}`)
+                    }
+                    params.push(...genres);
 
-    if (language === "All" ){
-        params.push(`%`)
+                    sql = ' with desiredKeys as (select keyword_name, keyword_id from keyword where keyword_name in (' + keywords.map(() => '?').join(',') + '))' + sql;
+                    sql += ' and not exists (select 1 from desiredKeys dk where not exists(select 1 from movie_keywords as mk where m.movie_id=mk.movie_id and dk.keyword_id=mk.keyword_id))'
+                        + ' and genre_name in (' + genres.map(() => '?').join(',') + ')'
+                    // Case where keyword selection is inclusive
+                } else {
+                    params.push(`%${searchTerm}%`);
+                    if (language === "All" ){
+                        params.push(`%`)
+                    } else {
+                        params.push(`${language}`)
+                    }
+                    params.push(...keywords);
+                    params.push(...genres);
+
+                    sql += ' and keyword_name in (' + keywords.map(() => '?').join(',') + ')'
+                        + ' and genre_name in (' + genres.map(() => '?').join(',') + ')'
+                }
+                //     case where keywords are not selected
+            } else {
+
+                params.push(`%${searchTerm}%`);
+                if (language === "All" ){
+                    params.push(`%`)
+                } else {
+                    params.push(`${language}`)
+                }
+                params.push(...genres);
+                sql += ' and genre_name in (' + genres.map(() => '?').join(',') + ')'
+            }
+
+        }
+    //     Case where there are no genres selected
     } else {
-        params.push(`${language}`)
+        // Case where keywords are selected
+        if (keywords.length !== 0) {
+            // case where keywords selection is exclusive
+            if (typeof keywordType === "undefined") {
+                // pushes search term and language after pushing keywords
+                params.push(...keywords);
+                params.push(`%${searchTerm}%`);
+                if (language === "All" ){
+                    params.push(`%`)
+                } else {
+                    params.push(`${language}`)
+                }
+
+                sql = ' with desiredKeys as (select keyword_name, keyword_id from keyword where keyword_name in (' + keywords.map(() => '?').join(',') + '))' + sql;
+                sql += ' and not exists (select 1 from desiredKeys dk where not exists(select 1 from movie_keywords as mk where m.movie_id=mk.movie_id and dk.keyword_id=mk.keyword_id))'
+                // Case where keyword selection is inclusive
+            } else {
+                // pushes search term and language before pushing keywords
+                params.push(`%${searchTerm}%`);
+                if (language === "All" ){
+                    params.push(`%`)
+                } else {
+                    params.push(`${language}`)
+                }
+                params.push(...keywords);
+                sql += ' and keyword_name in (' + keywords.map(() => '?').join(',')
+            }
+        }
     }
 
     console.log(sql)

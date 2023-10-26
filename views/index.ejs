@@ -108,6 +108,11 @@
             padding: 25px 25px 0 25px;
         }
 
+        .inclusive-checkbox {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+
     </style>
     <script>
         window.onload = function() {
@@ -149,6 +154,7 @@
         <div id="advanced">
             <div class="advanced-container">
                 <div><h2>Genres</h2></div>
+                <div class="inclusive-checkbox"><input type="checkbox" name="gi" id="genre-checkbox">Match Any</div>
                 <div class="advanced-items">
                     <div class="advanced-item-checkbox">
                         <input type="checkbox" name="g" value="Adventure">Adventure
@@ -214,6 +220,7 @@
             </div>
             <div class="advanced-container">
                 <div><h2>Keywords</h2></div>
+                <div class="inclusive-checkbox"><input type="checkbox" name="ki" id="keyword-checkbox">Match Any</div>
                 <div class="advanced-items">
                     <textarea id="keyword-box" name="k" placeholder="Keywords: woman director, independent film, etc."></textarea>
                 </div>
@@ -222,6 +229,7 @@
                 <div><h2>Language</h2></div>
                 <div class="advanced-items">
                     <select id="languages" name="l">
+                        <option value="All">All</option>
                         <option value="en">English</option>
                         <option value="fr">Français</option>
                         <option value="es">Español</option>
