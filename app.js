@@ -59,14 +59,14 @@ app.get('/buscar', (req, res) => {
                 // case where keywords selection is exclusive
                 if (typeof keywordType === "undefined") {
 
+                    params.push(...genres);
+                    params.push(...keywords);
                     params.push(`%${searchTerm}%`);
                     if (language === "All" ){
                         params.push(`%`)
                     } else {
                         params.push(`${language}`)
                     }
-                    params.push(...genres);
-                    params.push(...keywords);
 
                     sql = ' with desiredGenres as (select genre_name, genre_id from genre where genre_name in (' + genres.map(() => '?').join(',') + '))'
                         + ', desiredKeys as (select keyword_name, keyword_id from keyword where keyword_name in (' + keywords.map(() => '?').join(',') + '))' + sql;
@@ -237,7 +237,7 @@ app.get('/pelicula/:id', (req, res) => {
     const movieId = req.params.id;
 
     // Consulta SQL para obtener los datos de la película, elenco y crew
-    const query = `
+    let query = `
    SELECT
       movie.*,
       actor.person_name as actor_name,
@@ -380,29 +380,6 @@ app.get('/pelicula/:id', (req, res) => {
                             keyword_name: row.keyword_name,
                             keyword_id: row.keyword_id
                         });
-                    }
-                }
-            });
-
-
-            // Crear un objeto para almacenar writers
-            rows.forEach((row) => {
-                if (row.crew_member_id && row.crew_member_name && row.department_name && row.job) {
-                    // Verificar si ya existe una entrada con los mismos valores en writers
-                    const isDuplicate = movieData.writers.some((crew_member) =>
-                        crew_member.crew_member_id === row.crew_member_id
-                    );
-
-                    if (!isDuplicate) {
-                        // Si no existe, agregar los datos a la lista de writers
-                        if (row.department_name === 'Writing' && row.job === 'Writer') {
-                            movieData.writers.push({
-                                crew_member_id: row.crew_member_id,
-                                crew_member_name: row.crew_member_name,
-                                department_name: row.department_name,
-                                job: row.job,
-                            });
-                        }
                     }
                 }
             });
