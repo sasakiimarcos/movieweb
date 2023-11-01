@@ -121,10 +121,22 @@
 <div id="movie_status"><p><%= movie.movie_status %></p></div>
 
 <h3>Tagline:</h3>
-<div id="tagline"><p><%= movie.tagline %></p></div>
+<div id="tagline">
+    <% if (movie.tagline.length === 0 ) { %>
+        <p> No Tagline Found </p>
+    <% } else {%>
+        <p><%= movie.tagline %></p>
+    <% }; %>
+</div>
 
 <h3>Homepage:</h3>
-<div id="homepage"><a target="_blank" href=<%= movie.homepage %>><%= movie.homepage %></a></div>
+<div id="homepage">
+    <% if (movie.homepage.length === 0) { %>
+        <p> No homepage Found </p>
+    <% } else { %>
+        <p> <a target="_blank" href=<%= movie.homepage %>><%= movie.homepage %></a> </p>
+    <% } %>
+</div>
 
 <h3>Countries: </h3>
 <p>
