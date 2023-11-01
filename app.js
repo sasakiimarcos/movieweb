@@ -238,7 +238,7 @@ app.get('/pelicula/:id', (req, res) => {
 
     // Consulta SQL para obtener los datos de la película, elenco y crew
     let query = `
-   SELECT
+    SELECT
       movie.*,
       actor.person_name as actor_name,
       actor.person_id as actor_id,
@@ -248,10 +248,6 @@ app.get('/pelicula/:id', (req, res) => {
       movie_cast.cast_order,
       department.department_name,
       movie_crew.job,
-      g.genre_name,
-      g.genre_id,
-      k.keyword_name,
-      k.keyword_id,
       movie.budget,
       movie.revenue,
       movie.runtime,
@@ -267,10 +263,6 @@ app.get('/pelicula/:id', (req, res) => {
     LEFT JOIN movie_crew ON movie.movie_id = movie_crew.movie_id
     LEFT JOIN department ON movie_crew.department_id = department.department_id
     LEFT JOIN person as crew_member ON crew_member.person_id = movie_crew.person_id
-    left join movie_genres as mg on movie.movie_id=mg.movie_id
-    left join genre as g on mg.genre_id=g.genre_id
-    left join movie_keywords as mk on movie.movie_id=mk.movie_id
-    left join keyword as k on mk.keyword_id=k.keyword_id
     WHERE movie.movie_id = ?`;
 
     // Ejecutar la consulta
@@ -293,6 +285,9 @@ app.get('/pelicula/:id', (req, res) => {
                 crew: [],
                 genres: [],
                 keywords: [],
+                languages: [],
+                countries: [],
+                companies: [],
                 budget: rows[0].budget,
                 revenue: rows[0].revenue,
                 runtime: rows[0].runtime,
@@ -348,42 +343,6 @@ app.get('/pelicula/:id', (req, res) => {
                 }
             });
 
-            // Crear un objeto para almacenar generos
-            rows.forEach((row) => {
-                if (row.genre_name && row.genre_id) {
-                    // Verificar si ya existe una entrada con los mismos valores en directors
-                    const isDuplicate = movieData.genres.some((movieGenre) =>
-                        movieGenre.genre_id === row.genre_id
-                    );
-
-                    if (!isDuplicate) {
-                        // Si no existe, agregar los datos a la lista de directors
-                            movieData.genres.push({
-                                genre_name: row.genre_name,
-                                genre_id: row.genre_id
-                            });
-                    }
-                }
-            });
-
-            // Crear un objeto para almacenar keywords
-            rows.forEach((row) => {
-                if (row.keyword_name && row.keyword_id) {
-                    // Verificar si ya existe una entrada con los mismos valores en directors
-                    const isDuplicate = movieData.keywords.some((movieKeyword) =>
-                        movieKeyword.keyword_id === row.keyword_id
-                    );
-
-                    if (!isDuplicate) {
-                        // Si no existe, agregar los datos a la lista de directors
-                        movieData.keywords.push({
-                            keyword_name: row.keyword_name,
-                            keyword_id: row.keyword_id
-                        });
-                    }
-                }
-            });
-
             // Crear un objeto para almacenar el elenco
             rows.forEach((row) => {
                 if (row.actor_id && row.actor_name && row.character_name) {
@@ -429,7 +388,175 @@ app.get('/pelicula/:id', (req, res) => {
                 }
             });
 
-            res.render('pelicula', { movie: movieData });
+            query = `
+            SELECT
+              g.genre_name,
+              g.genre_id
+            FROM movie
+            left join movie_genres as mg on movie.movie_id=mg.movie_id
+            left join genre as g on mg.genre_id=g.genre_id
+            WHERE movie.movie_id = ?`
+
+            db.all(query, [movieId], (err, rows) => {
+                if (err) {
+                    console.error(err);
+                    res.status(500).send('Error al cargar los datos de la película.');
+                } else {
+                    // Crear un objeto para almacenar generos
+                    rows.forEach((row) => {
+                        if (row.genre_name && row.genre_id) {
+                            // Verificar si ya existe una entrada con los mismos valores en directors
+                            const isDuplicate = movieData.genres.some((movieGenre) =>
+                                movieGenre.genre_id === row.genre_id
+                            );
+
+                            if (!isDuplicate) {
+                                // Si no existe, agregar los datos a la lista de directors
+                                movieData.genres.push({
+                                    genre_name: row.genre_name,
+                                    genre_id: row.genre_id
+                                });
+                            }
+                        }
+                    });
+
+                    query = `SELECT
+                              k.keyword_name,
+                              k.keyword_id
+                            from movie
+                            left join movie_keywords as mk on movie.movie_id=mk.movie_id
+                            left join keyword as k on mk.keyword_id=k.keyword_id
+                            WHERE movie.movie_id = ?`
+
+                    // Ejecutar la consulta
+                    db.all(query, [movieId], (err, rows) => {
+                        if (err) {
+                            console.error(err);
+                            res.status(500).send('Error al cargar los datos de la película.');
+                        } else {
+                            // Crear un objeto para almacenar keywords
+                            rows.forEach((row) => {
+                                if (row.keyword_name && row.keyword_id) {
+                                    // Verificar si ya existe una entrada con los mismos valores en directors
+                                    const isDuplicate = movieData.keywords.some((movieKeyword) =>
+                                        movieKeyword.keyword_id === row.keyword_id
+                                    );
+
+                                    if (!isDuplicate) {
+                                        // Si no existe, agregar los datos a la lista de directors
+                                        movieData.keywords.push({
+                                            keyword_name: row.keyword_name,
+                                            keyword_id: row.keyword_id
+                                        });
+                                    }
+                                }
+                            });
+
+                            query = `SELECT
+                                    l.language_name,
+                                    l.language_id,
+                                    ml.language_role_id
+                                    from movie
+                                    left join movie_languages as ml on movie.movie_id=ml.movie_id
+                                    left join language as l on ml.language_id=l.language_id
+                                    WHERE movie.movie_id = ?
+                                    order by ml.language_role_id`
+
+                            db.all(query, [movieId], (err, rows) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.status(500).send('Error al cargar los datos de la película.');
+                                } else {
+
+                                    // Crear un objeto para almacenar languagess
+                                    rows.forEach((row) => {
+                                        if (row.language_name && row.language_id && row.language_role_id) {
+                                            // Verificar si ya existe una entrada con los mismos valores en directors
+                                            const isDuplicate = movieData.languages.some((movieLanguage) =>
+                                                movieLanguage.language_id === row.language_id && movieLanguage.language_role_id === row.language_role_id
+                                            );
+                                            if (!isDuplicate) {
+                                                // Si no existe, agregar los datos a la lista de directors
+                                                movieData.languages.push({
+                                                    language_name: row.language_name,
+                                                    language_id: row.language_id,
+                                                    language_role_id: row.language_role_id
+                                                });
+                                            }
+                                        }
+                                    });
+
+                                    query = `SELECT
+                                            pc.company_name,
+                                            pc.company_id
+                                            from movie
+                                            left join movie_company as mc on movie.movie_id = mc.movie_id
+                                            left join production_company as pc on mc.company_id=pc.company_id
+                                            WHERE movie.movie_id = ?`
+
+                                    db.all(query, [movieId], (err, rows) => {
+                                        if (err) {
+                                            console.error(err);
+                                            res.status(500).send('Error al cargar los datos de la película.');
+                                        } else {
+
+                                            rows.forEach((row) => {
+                                                if (row.company_name && row.company_id) {
+                                                    // Verificar si ya existe una entrada con los mismos valores en directors
+                                                    const isDuplicate = movieData.companies.some((movieCompany) =>
+                                                        movieCompany.company_id === row.company_id
+                                                    );
+                                                    if (!isDuplicate) {
+                                                        // Si no existe, agregar los datos a la lista de directors
+                                                        movieData.companies.push({
+                                                            company_name: row.company_name,
+                                                            company_id: row.company_id
+                                                        });
+                                                    }
+                                                }
+                                            });
+
+                                            query = `SELECT
+                                                        c.country_name,
+                                                        c.country_id
+                                                        from movie
+                                                        left join production_country as pc on movie.movie_id = pc.movie_id
+                                                        left join country as c on pc.country_id = c.country_id
+                                                    where movie.movie_id = ?`
+
+                                            db.all(query, [movieId], (err, rows) => {
+                                                if (err) {
+                                                    console.error(err);
+                                                    res.status(500).send('Error al cargar los datos de la película.');
+                                                } else {
+
+                                                    rows.forEach((row) => {
+                                                        if (row.country_name && row.country_id) {
+                                                            // Verificar si ya existe una entrada con los mismos valores en directors
+                                                            const isDuplicate = movieData.countries.some((movieCountry) =>
+                                                                movieCountry.country_id === row.country_id
+                                                            );
+                                                            if (!isDuplicate) {
+                                                                // Si no existe, agregar los datos a la lista de directors
+                                                                movieData.countries.push({
+                                                                    country_name: row.country_name,
+                                                                    country_id: row.country_id
+                                                                });
+                                                            }
+                                                        }
+                                                    });
+
+                                                    res.render('pelicula', {movie: movieData});
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    })
+                }
+            })
         }
     });
 });

@@ -30,6 +30,34 @@
         <% } %>
     <% }); %>
 </p>
+<h3>Official Language: </h3>
+<p>
+    <% if (movie.languages.length === 0 ) { %>
+        <%= "No Official Language Found" %> %>
+    <% } %>
+    <% movie.languages.forEach((language) => { %>
+        <% if (language.language_role_id === 1) {%>
+            <%= language.language_name %>
+        <% } %>
+    <% }); %>
+</p>
+<h3>Spoken Languages: </h3>
+<p>
+    <% if (movie.languages.length === 0 ) { %>
+        <%= "No Languages Found" %> %>
+    <% } %>
+    <% let countL = movie.languages.length %>
+    <% movie.languages.forEach((language) => { %>
+        <% countL-- %>
+        <%if (language.language_role_id === 2 ) {%>
+            <% if (countL === 0) {%>
+                <%= language.language_name %>
+            <% } else {%>
+                <%= language.language_name + ", " %>
+            <% } %>
+        <% } %>
+    <% }); %>
+</p>
 <h3>Release Date: <%= movie.release_date %></h3>
 <h3>Directed By: </h3>
 <ul>
@@ -98,6 +126,37 @@
 <h3>Homepage:</h3>
 <div id="homepage"><a target="_blank" href=<%= movie.homepage %>><%= movie.homepage %></a></div>
 
+<h3>Countries: </h3>
+<p>
+    <% if (movie.countries.length === 0 ) { %>
+        <%= "No Countries Found" %> %>
+    <% } %>
+    <% let countCou = movie.countries.length %>
+    <% movie.countries.forEach((country) => { %>
+        <% countCou-- %>
+        <% if (countCou === 0) {%>
+            <%= country.country_name %>
+        <% } else {%>
+            <%= country.country_name + ", " %>
+        <% } %>
+    <% }); %>
+</p>
+
+<h3>Companies: </h3>
+<p>
+    <% if (movie.companies.length === 0 ) { %>
+        <%= "No Companies Found" %> %>
+    <% } %>
+    <% let countCom = movie.companies.length %>
+    <% movie.companies.forEach((company) => { %>
+        <% countCom-- %>
+        <% if (countCom === 0) {%>
+            <%= company.company_name %>
+        <% } else {%>
+            <%= company.company_name + ", " %>
+        <% } %>
+    <% }); %>
+</p>
 
 <p></p>
 <div id="inicio"><a href="/">Home</a></div>
