@@ -50,6 +50,11 @@ app.get('/buscar', (req, res) => {
                       WHERE m.title LIKE ? and l.language_code like ?`;
     let params = [];
 
+    // Siguente serie de ifs anidados basicamente contempla cada uno de las posibles situaciones cuando se hace una
+    // busqueda de peliculas por generos y keywords. Reconozco que hay formas mas optimas para hacerlo con menos codigo
+    // pero por un tema de organizacion y legibilidad se hizo asi. Para cada uno de las situaciones, hay un orden
+    // particular de hacer pushes de los paramtros y partes especificas de la consulta que se deben modificar.
+
     // Case where genres exists
     if (genres) {
         // genres selected exclusively
@@ -181,9 +186,8 @@ app.get('/buscar', (req, res) => {
         }
     }
 
-    console.log(sql)
-    // Realizar la búsqueda en la base de datos de Movies
-
+    // La siguiente seroie de db.all() anidados se hace para poder pasar movies, actors y directos a la vez por un
+    // mismo res.render().
     db.all(
         sql,
         params,
@@ -264,6 +268,9 @@ app.get('/pelicula/:id', (req, res) => {
     LEFT JOIN department ON movie_crew.department_id = department.department_id
     LEFT JOIN person as crew_member ON crew_member.person_id = movie_crew.person_id
     WHERE movie.movie_id = ?`;
+
+    // En vez de hacer una consulta grande que tenga toda la informacion sobre peliculas junto con los idiomas,
+    // empresas, paises y etc, se separan en consultas pequenas y las ejecutamos con una serie de db.all() anidadas
 
     // Ejecutar la consulta
     db.all(query, [movieId], (err, rows) => {
@@ -388,6 +395,7 @@ app.get('/pelicula/:id', (req, res) => {
                 }
             });
 
+            // query para obtener todos los generos de la pelicula
             query = `
             SELECT
               g.genre_name,
@@ -420,6 +428,7 @@ app.get('/pelicula/:id', (req, res) => {
                         }
                     });
 
+                    // query para obtener todos los keywords de la pelicula
                     query = `SELECT
                               k.keyword_name,
                               k.keyword_id
@@ -452,6 +461,7 @@ app.get('/pelicula/:id', (req, res) => {
                                 }
                             });
 
+                            // query para obtener todos los idiomas de la pelicula
                             query = `SELECT
                                     l.language_name,
                                     l.language_id,
@@ -486,6 +496,7 @@ app.get('/pelicula/:id', (req, res) => {
                                         }
                                     });
 
+                                    // query para obtener todas las empresas involucradas en la produccion de la pelicula
                                     query = `SELECT
                                             pc.company_name,
                                             pc.company_id
@@ -516,6 +527,7 @@ app.get('/pelicula/:id', (req, res) => {
                                                 }
                                             });
 
+                                            // query para conseguir los paises vinculados con la pelicula
                                             query = `SELECT
                                                         c.country_name,
                                                         c.country_id
@@ -565,7 +577,7 @@ app.get('/pelicula/:id', (req, res) => {
 app.get('/actor/:id', (req, res) => {
     const actorId = req.params.id;
 
-    // Consulta SQL para obtener las películas en las que participó el actor
+    // Consulta SQL para obtener las películas en las que participó el actor unida con las peliculas donde aparecio como director
     const query = `
     SELECT DISTINCT person.person_name as name, movie.*, 0 as role
     FROM movie
@@ -597,7 +609,7 @@ app.get('/actor/:id', (req, res) => {
 app.get('/director/:id', (req, res) => {
     const directorId = req.params.id;
 
-    // Consulta SQL para obtener las películas dirigidas por el director
+    // Consulta SQL para obtener las películas dirigidas por el director unida con las peliculas donde aperecio como actor
     const query = `
     SELECT DISTINCT
     person.person_name as name,
@@ -615,9 +627,6 @@ app.get('/director/:id', (req, res) => {
     JOIN person ON person.person_id = movie_cast.person_id
     WHERE movie_cast.person_id = ?;
   `;
-
-
-    // console.log('query = ', query)
 
     // Ejecutar la consulta
     db.all(query, [directorId, directorId], (err, movies) => {
