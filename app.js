@@ -62,6 +62,7 @@ app.get('/buscar', (req, res) => {
             // Case where keywords are selected
             if (keywords.length !== 0) {
                 // case where keywords selection is exclusive
+                // generos AND y keywords por AND
                 if (typeof keywordType === "undefined") {
 
                     params.push(...genres);
@@ -79,6 +80,7 @@ app.get('/buscar', (req, res) => {
                         + ' and not exists (select 1 from desiredGenres dg where not exists(select 1 from movie_genres as mg where m.movie_id=mg.movie_id and dg.genre_id=mg.genre_id))'
                 // Case where keyword selection is inclusive
                 } else {
+                    // genres por AND y keywords por OR
 
                     params.push(...genres);
                     params.push(`%${searchTerm}%`);
@@ -196,6 +198,7 @@ app.get('/buscar', (req, res) => {
                 console.error(err);
                 res.status(500).send('Error en la búsqueda.');
             } else {
+                // query para conseguir los actores
                 sql = 'select distinct p.person_id, person_name from movie_cast as mc join person as p on mc.person_id=p.person_id where person_name like ?'
                 params = [`%${searchTerm}%`];
                 db.all(
@@ -206,6 +209,7 @@ app.get('/buscar', (req, res) => {
                             console.error(err);
                             res.status(500).send('Error en la búsqueda.');
                         } else {
+                            // query para conseguir los directores
                             sql = 'select distinct p.person_id, person_name from movie_crew as mc join person as p on mc.person_id=p.person_id where job=\'Director\' and person_name like ?'
                             params = [`%${searchTerm}%`];
                             db.all(
@@ -280,7 +284,7 @@ app.get('/pelicula/:id', (req, res) => {
         } else if (rows.length === 0) {
             res.status(404).send('Película no encontrada.');
         } else {
-            // Organizar los datos en un objeto de película con elenco y crew
+            // Organizar los datos en un objeto de película con elenco, crew y mas informacion sobre la pelicula
             const movieData = {
                 id: rows[0].id,
                 title: rows[0].title,
@@ -413,13 +417,13 @@ app.get('/pelicula/:id', (req, res) => {
                     // Crear un objeto para almacenar generos
                     rows.forEach((row) => {
                         if (row.genre_name && row.genre_id) {
-                            // Verificar si ya existe una entrada con los mismos valores en directors
+                            // Verificar si ya existe una entrada con los mismos valores en genres
                             const isDuplicate = movieData.genres.some((movieGenre) =>
                                 movieGenre.genre_id === row.genre_id
                             );
 
                             if (!isDuplicate) {
-                                // Si no existe, agregar los datos a la lista de directors
+                                // Si no existe, agregar los datos a la lista de generos
                                 movieData.genres.push({
                                     genre_name: row.genre_name,
                                     genre_id: row.genre_id
@@ -446,13 +450,13 @@ app.get('/pelicula/:id', (req, res) => {
                             // Crear un objeto para almacenar keywords
                             rows.forEach((row) => {
                                 if (row.keyword_name && row.keyword_id) {
-                                    // Verificar si ya existe una entrada con los mismos valores en directors
+                                    // Verificar si ya existe una entrada con los mismos valores en keywords
                                     const isDuplicate = movieData.keywords.some((movieKeyword) =>
                                         movieKeyword.keyword_id === row.keyword_id
                                     );
 
                                     if (!isDuplicate) {
-                                        // Si no existe, agregar los datos a la lista de directors
+                                        // Si no existe, agregar los datos a la lista de keywords
                                         movieData.keywords.push({
                                             keyword_name: row.keyword_name,
                                             keyword_id: row.keyword_id
@@ -481,12 +485,12 @@ app.get('/pelicula/:id', (req, res) => {
                                     // Crear un objeto para almacenar languagess
                                     rows.forEach((row) => {
                                         if (row.language_name && row.language_id && row.language_role_id) {
-                                            // Verificar si ya existe una entrada con los mismos valores en directors
+                                            // Verificar si ya existe una entrada con los mismos valores en langauges
                                             const isDuplicate = movieData.languages.some((movieLanguage) =>
                                                 movieLanguage.language_id === row.language_id && movieLanguage.language_role_id === row.language_role_id
                                             );
                                             if (!isDuplicate) {
-                                                // Si no existe, agregar los datos a la lista de directors
+                                                // Si no existe, agregar los datos a la lista de lenguajes
                                                 movieData.languages.push({
                                                     language_name: row.language_name,
                                                     language_id: row.language_id,
@@ -513,12 +517,12 @@ app.get('/pelicula/:id', (req, res) => {
 
                                             rows.forEach((row) => {
                                                 if (row.company_name && row.company_id) {
-                                                    // Verificar si ya existe una entrada con los mismos valores en directors
+                                                    // Verificar si ya existe una entrada con los mismos valores en companies
                                                     const isDuplicate = movieData.companies.some((movieCompany) =>
                                                         movieCompany.company_id === row.company_id
                                                     );
                                                     if (!isDuplicate) {
-                                                        // Si no existe, agregar los datos a la lista de directors
+                                                        // Si no existe, agregar los datos a la lista de companies
                                                         movieData.companies.push({
                                                             company_name: row.company_name,
                                                             company_id: row.company_id
@@ -544,12 +548,12 @@ app.get('/pelicula/:id', (req, res) => {
 
                                                     rows.forEach((row) => {
                                                         if (row.country_name && row.country_id) {
-                                                            // Verificar si ya existe una entrada con los mismos valores en directors
+                                                            // Verificar si ya existe una entrada con los mismos valores en countries
                                                             const isDuplicate = movieData.countries.some((movieCountry) =>
                                                                 movieCountry.country_id === row.country_id
                                                             );
                                                             if (!isDuplicate) {
-                                                                // Si no existe, agregar los datos a la lista de directors
+                                                                // Si no existe, agregar los datos a la lista de countries
                                                                 movieData.countries.push({
                                                                     country_name: row.country_name,
                                                                     country_id: row.country_id
