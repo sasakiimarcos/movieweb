@@ -55,6 +55,8 @@ app.get('/buscar', (req, res) => {
     // pero por un tema de organizacion y legibilidad se hizo asi. Para cada uno de las situaciones, hay un orden
     // particular de hacer pushes de los paramtros y partes especificas de la consulta que se deben modificar.
 
+    // por exclusive se refiere a AND e inclusive a OR
+
     // Case where genres exists
     if (genres) {
         // genres selected exclusively
@@ -62,7 +64,6 @@ app.get('/buscar', (req, res) => {
             // Case where keywords are selected
             if (keywords.length !== 0) {
                 // case where keywords selection is exclusive
-                // generos AND y keywords por AND
                 if (typeof keywordType === "undefined") {
 
                     params.push(...genres);
@@ -80,7 +81,6 @@ app.get('/buscar', (req, res) => {
                         + ' and not exists (select 1 from desiredGenres dg where not exists(select 1 from movie_genres as mg where m.movie_id=mg.movie_id and dg.genre_id=mg.genre_id))'
                 // Case where keyword selection is inclusive
                 } else {
-                    // genres por AND y keywords por OR
 
                     params.push(...genres);
                     params.push(`%${searchTerm}%`);
@@ -188,7 +188,7 @@ app.get('/buscar', (req, res) => {
         }
     }
 
-    // La siguiente seroie de db.all() anidados se hace para poder pasar movies, actors y directos a la vez por un
+    // La siguiente serie de db.all() anidados se hace para poder pasar movies, actors y directors a la vez por un
     // mismo res.render().
     db.all(
         sql,
